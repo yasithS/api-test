@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,42 +19,44 @@ const ResetPassword = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   
   // Get token and uid from route params if provided
-  const { token, uidb64 } = route.params || {};
+  const { uidb64, token } = route.params || {};
+
+  // Validate that we have the required parameters
+  useEffect(() => {
+    if (!uidb64 || !token) {
+      Alert.alert(
+        'Invalid Link',
+        'The password reset link is invalid or has expired.',
+        [{ text: 'Go to Login', onPress: () => navigation.navigate('Login') }]
+      );
+    }
+  }, [uidb64, token]);
 
   const handleResetPassword = async () => {
-    // Validate email
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+    // Validate password fields
+    if (!password.trim()) {
+      Alert.alert('Error', 'Please enter your new password');
       return;
     }
     
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+    if (!confirmPassword.trim()) {
+      Alert.alert('Error', 'Please confirm your password');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
     
     setLoading(true);
     try {
-      const response = await authService.forgotPassword(email);
+      const response = await authService.resetPassword(uidb64, token, password);
       
-      // In a real mobile app scenario, we would navigate to ResetPassword if we get tokens from deeplink
-      // For development and testing purposes, we'll add an option to simulate navigation
       Alert.alert(
         'Success', 
-        'Password reset link has been sent to your email.\n\nFor development: Would you like to simulate clicking the reset link?',
-        [
-          { text: 'No, go to login', onPress: () => navigation.navigate('Login') },
-          { text: 'Yes, simulate reset', onPress: () => {
-            // In a real scenario, we would get these values from the email link or deeplink
-            // These are dummy values for testing
-            navigation.navigate('ResetPassword', {
-              uidb64: 'dummy-uid',
-              token: 'dummy-token'
-            });
-          }}
-        ]
+        'Your password has been reset successfully.',
+        [{ text: 'Login Now', onPress: () => navigation.navigate('Login') }]
       );
     } catch (error) {
       Alert.alert('Error', error.message || 'Password reset failed. Please try again.');
@@ -70,7 +72,7 @@ const ResetPassword = ({ navigation, route }) => {
       {/* Illustration */}
       <View style={styles.imageContainer}>
         <Image
-          source={require('../assets/reset-password.png')}
+          source={require('../assets/resetPassword.png')}
           style={styles.image}
           resizeMode="contain"
         />
