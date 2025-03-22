@@ -23,9 +23,6 @@
     },
     "web": {
       "favicon": "./app/assets/rewire-icon.png"
-    },
-    "plugins": [
-      "expo-sqlite"
-    ]
+    }
   }
 }

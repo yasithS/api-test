@@ -126,13 +126,19 @@ Rewire is a mobile application designed to assist individuals in overcoming addi
 3. Open your IDE at the `App/backend/rewire` directory.
 
 ### Build and Start the Backend
-1. Build and start the containers:
+1. Build the backend without using cache:
    ```bash
-   docker-compose up --build
+   docker build --no-cache .
+   ```
+   This may take some time depending on system performance and internet speed.
+
+2. Start the container:
+   ```bash
+   docker-compose up
    ```
    The first run may require downloading dependencies, so it could take additional time.
 
-2. Once started, the server should be available on port `8000`. Expected output:
+3. Once started, the server should be available on port `8000`. Expected output:
    ```
    ✔ rewire                     Built
    ✔ Network rewire_default     Created
@@ -225,7 +231,7 @@ If you encounter an error like:
 
 ---
 
-## Managing Migrations Manually
+## Managing Migrations
 ### Handling Initial Migrations
 When starting the server for the first time, you may see:
 ```
@@ -240,7 +246,7 @@ Run 'python manage.py migrate' to apply them.
    ```
 2. Apply migrations:
    ```bash
-   python manage.py makemigrations core recommendations questionnaire aiprofile
+   python manage.py makemigrations core
    ```
    ```bash
    python manage.py migrate

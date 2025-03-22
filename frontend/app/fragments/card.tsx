@@ -10,7 +10,6 @@ import { useTheme } from "@react-navigation/native";
 export default function Card({
     style,
     onPress,
-    onLongPress,
     children,
     borderRadius = 16,
     borderWidth = 0,
@@ -30,7 +29,6 @@ export default function Card({
     const containerProps = onPress
         ? {
             onPress,
-            onLongPress,
             underlayColor,
             activeOpacity,
         }
@@ -51,7 +49,7 @@ export default function Card({
 
 
     return (
-        <Container style={cardStyles} {...containerProps} {...props} >
+        <Container style={cardStyles} {...containerProps} {...props}>
             <View style={[styles.card, { padding }]}>
                 {children}
             </View>
