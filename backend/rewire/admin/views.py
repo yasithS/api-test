@@ -41,35 +41,21 @@ def signup_step_two(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            
-            # Get all fields from the request
-            first_name = data.get('first_name')
-            last_name = data.get('last_name')
-            user_name = data.get('user_name')
-            email = data.get('email')
-            password = data.get('password')
-            confirm_password = data.get('confirm_password')
-            
-            # Validate all required fields
-            if not all([first_name, last_name, user_name, email, password, confirm_password]):
-                return JsonResponse({'error': 'All fields are required'}, status=400)
+            email = data['email']
+            password = data['password']
+            confirm_password = data['confirm_password']
             
             if password != confirm_password:
                 return JsonResponse({'error': 'Passwords do not match'}, status=400)
             
-            # Check if username exists
-            if User.objects.filter(user_name=user_name).exists():
-                return JsonResponse({'error': 'Username already exists'}, status=400)
+            signup_data = request.session.get('signup_data')
+            if not signup_data:
+                return JsonResponse({'error': 'No data from step one'}, status=400)
             
-            # Check if email exists
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'error': 'Email already exists'}, status=400)
-            
-            # Create user
             user = User.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                user_name=user_name,
+                first_name=signup_data['first_name'],
+                last_name=signup_data['last_name'],
+                user_name=signup_data['user_name'],
                 email=email,
                 password=make_password(password)
             )
@@ -77,15 +63,9 @@ def signup_step_two(request):
             user.save()
             
             return JsonResponse({'message': 'User created successfully'}, status=201)
-            
         except KeyError as e:
             print(e)
-            return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-        except Exception as e:
-            print(f"Error in signup step two: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'error': 'Invalid data'}, status=400)
     else:
         return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
 
@@ -173,8 +153,7 @@ def forget_password(request):
             user = User.objects.filter(email=email).first()
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            
-            reset_link = f"http://localhost:8081/reset_password/{uid}/{token}/"
+            reset_link = f"http://localhost:8000/reset_password/{uid}/{token}/"
 
             send_mail(
                 'Reset your password for rewire',
@@ -194,14 +173,8 @@ def forget_password(request):
 
 @api_view(['POST'])        
 @csrf_exempt
-def reset_password(request, uidb64=None, token=None):
-    # Now the function can handle both the form submission and the link validation
-    if request.method == 'GET':
-        # This is when the user clicks the link
-        # You can return a response or redirect to frontend
-        return JsonResponse({'valid': True, 'uidb64': uidb64, 'token': token})
-    elif request.method == 'POST':
-        # Original password reset logic
+def reset_password(request, uidb64, token):
+    if request.method == 'POST':
         try:
             data = json.loads(request.body)
             new_password = data['new_password']

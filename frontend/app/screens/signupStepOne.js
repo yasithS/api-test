@@ -7,38 +7,24 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
-  ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { authService } from '../services/auth-service';
 
 const SignupStepOne = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
-  const [loading, setLoading] = useState(false);
   
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!firstName.trim() || !lastName.trim() || !username.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
     
-    setLoading(true);
-    try {
-      const response = await authService.signupStepOne(firstName, lastName, username);
-      
-      // If successful, navigate to step two with the user data
-      navigation.navigate('SignupStepTwo', {
-        firstName,
-        lastName,
-        username
-      });
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Signup failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // Navigate to step two with user data
+    navigation.navigate('SignupStepTwo', {
+      firstName,
+      lastName,
+      username
+    });
   };
 
   return (
@@ -62,7 +48,6 @@ const SignupStepOne = ({ navigation }) => {
           value={firstName}
           onChangeText={setFirstName}
           placeholderTextColor="#B8B8B8"
-          editable={!loading}
         />
         
         <TextInput
@@ -71,7 +56,6 @@ const SignupStepOne = ({ navigation }) => {
           value={lastName}
           onChangeText={setLastName}
           placeholderTextColor="#B8B8B8"
-          editable={!loading}
         />
         
         <TextInput
@@ -80,7 +64,6 @@ const SignupStepOne = ({ navigation }) => {
           value={username}
           onChangeText={setUsername}
           placeholderTextColor="#B8B8B8"
-          editable={!loading}
         />
       </View>
       
@@ -92,15 +75,10 @@ const SignupStepOne = ({ navigation }) => {
       
       {/* Next Button */}
       <TouchableOpacity 
-        style={[styles.nextButton, loading && styles.nextButtonDisabled]}
-        onPress={handleNext}
-        disabled={loading}
+        style={styles.nextButton}
+        onPress={() => navigation.navigate('SignupStepTwo')}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.nextButtonText}>Next</Text>
-        )}
+        <Text style={styles.nextButtonText}>Next</Text>
       </TouchableOpacity>
       
       {/* Sign In Link */}
@@ -178,10 +156,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
-  },
-  nextButtonDisabled: {
-    backgroundColor: '#A0A0A0',
-    opacity: 0.7,
   },
   nextButtonText: {
     color: '#fff',
